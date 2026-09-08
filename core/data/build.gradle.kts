@@ -21,6 +21,7 @@ dependencies {
     ksp(libs.androidx.room.compiler)
 
     testImplementation(libs.androidx.room.testing)
+    testImplementation(libs.androidx.test.ext.junit)
 
     implementation(libs.androidx.datastore.preferences)
     implementation(libs.kotlinx.coroutines.android)
