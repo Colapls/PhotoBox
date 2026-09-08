@@ -13,6 +13,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -106,13 +107,38 @@ class MediaStoreDataSource @Inject constructor(
     /**
      * 监听新增媒体（图片 + 视频），写入 pending_shuffle 表。
      * Flow 触发：MediaStore 内容变化 → 取最新 _ID（不在 queryAll 中的）。
-     * 简化实现：每次 ContentObserver 触发时，调用 queryAll() 与 pending 集合求差。
-     * 实际项目可优化为基于 notify_change 的 URI 携带 _ID，但 ContentObserver 回调不带具体 URI。
+     * 实现：observer 把变更投递到 Channel；flow 收集器负责查询 + diff + DAO 写入。
+     * 这样 suspend 函数只在协程体内调用，避开了 ContentObserver 非挂起回调的限制。
      */
     fun observeNewMedia(knownMediaIds: Set<Long>): Flow<Unit> = callbackFlow {
+        val channel = kotlinx.coroutines.channels.Channel<Unit>(
+            capacity = kotlinx.coroutines.channels.Channel.CONFLATED,
+        )
         val handler = android.os.Handler(android.os.Looper.getMainLooper())
         val observer = object : ContentObserver(handler) {
             override fun onChange(selfChange: Boolean, uri: Uri?) {
+                channel.trySend(Unit)
+            }
+        }
+        val imageUri = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL)
+        } else {
+            @Suppress("DEPRECATION")
+            MediaStore.Images.Media.EXTERNAL_CONTENT_URI
+        }
+        val videoUri = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            MediaStore.Video.Media.getContentUri(MediaStore.VOLUME_EXTERNAL)
+        } else {
+            @Suppress("DEPRECATION")
+            MediaStore.Video.Media.EXTERNAL_CONTENT_URI
+        }
+        resolver.registerContentObserver(imageUri, true, observer)
+        resolver.registerContentObserver(videoUri, true, observer)
+
+        // 在 flow 内部做实际工作：每次 channel 收到信号 → 查询 + diff + DAO 写入。
+        // 收集方所在的调度器决定 I/O 是否在 IO 线程；典型用法 viewModelScope + Dispatchers.IO。
+        launch {
+            for (signal in channel) {
                 val current = queryAll().map { it.mediaId }.toSet()
                 val fresh = current - knownMediaIds
                 fresh.forEach { id ->
@@ -123,14 +149,10 @@ class MediaStoreDataSource @Inject constructor(
                 trySend(Unit)
             }
         }
-        resolver.registerContentObserver(
-            MediaStore.Images.Media.EXTERNAL_CONTENT_URI, true, observer
-        )
-        resolver.registerContentObserver(
-            MediaStore.Video.Media.EXTERNAL_CONTENT_URI, true, observer
-        )
+
         awaitClose {
             resolver.unregisterContentObserver(observer)
+            channel.close()
         }
     }
 }
