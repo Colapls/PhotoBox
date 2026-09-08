@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<full-backup-content>
+    <!-- 不备份本地数据库与 DataStore -->
+</full-backup-content>
