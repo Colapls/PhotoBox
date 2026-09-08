@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="stream_empty_title">相册里一张照片都没有</string>
+    <string name="stream_empty_description">去系统相机拍几张，回来看这里能不能刷出来</string>
+    <string name="stream_round_finished">本轮已浏览 %1$d / %2$d</string>
+    <string name="stream_reshuffle">再来一轮</string>
+</resources>
