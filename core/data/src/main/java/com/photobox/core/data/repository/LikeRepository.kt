@@ -14,6 +14,8 @@ class LikeRepository @Inject constructor(
 ) {
     fun observeIsLiked(mediaId: Long): Flow<Boolean> = likeDao.observeIsLiked(mediaId)
 
+    fun observeAllIds(): Flow<List<Long>> = likeDao.observeAllIds()
+
     suspend fun toggle(mediaId: Long): Boolean {
         val currentlyLiked = likeDao.observeAllIds()
             .map { mediaId in it }
