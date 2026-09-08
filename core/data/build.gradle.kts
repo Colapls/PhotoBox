@@ -16,6 +16,12 @@ android {
 dependencies {
     implementation(project(":core:common"))
 
+    implementation(libs.androidx.room.runtime)
+    implementation(libs.androidx.room.ktx)
+    ksp(libs.androidx.room.compiler)
+
+    testImplementation(libs.androidx.room.testing)
+
     implementation(libs.androidx.datastore.preferences)
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.hilt.android)

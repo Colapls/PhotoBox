@@ -1,6 +1,8 @@
 plugins {
     id("photobox.android.library")
     id("photobox.android.compose")
+    id("ksp")
+    id("hilt")
 }
 
 android {
@@ -17,4 +19,11 @@ dependencies {
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.navigation.compose)
     implementation(libs.hilt.navigation.compose)
+    implementation(libs.coil.compose)
+    implementation(libs.androidx.room.ktx)
+
+    testImplementation(libs.junit5.api)
+    testImplementation(libs.mockk)
+    testImplementation(libs.turbine)
+    testImplementation(libs.kotlinx.coroutines.test)
 }
