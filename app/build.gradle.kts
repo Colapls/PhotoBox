@@ -40,6 +40,7 @@ dependencies {
     implementation(project(":feature:onboarding"))
     implementation(project(":feature:stream"))
     implementation(project(":feature:profile"))
+    implementation(project(":feature:settings"))
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)

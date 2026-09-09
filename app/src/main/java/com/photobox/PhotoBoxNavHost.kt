@@ -15,6 +15,7 @@ import com.photobox.feature.onboarding.OnboardingRoute
 import com.photobox.feature.profile.FavoritesListRoute
 import com.photobox.feature.profile.LikesListRoute
 import com.photobox.feature.profile.ProfileRoute
+import com.photobox.feature.settings.SettingsRoute
 import com.photobox.feature.stream.StreamRoute
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
@@ -29,6 +30,7 @@ object Routes {
     const val PROFILE = "profile"
     const val FAVORITES_LIST = "profile/favorites"
     const val LIKES_LIST = "profile/likes"
+    const val SETTINGS = "settings"
 }
 
 @HiltViewModel
@@ -79,6 +81,9 @@ fun PhotoBoxNavHost(
         }
         composable(Routes.LIKES_LIST) {
             LikesListRoute(onBack = { navController.popBackStack() })
+        }
+        composable(Routes.SETTINGS) {
+            SettingsRoute(onBack = { navController.popBackStack() })
         }
     }
 }
