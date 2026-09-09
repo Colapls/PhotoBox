@@ -53,9 +53,9 @@ class StreamViewModel @Inject constructor(
             ) { ids, liked, favorite ->
                 Triple(ids, liked.toSet(), favorite.toSet())
             }.flowOn(dispatchers.io).collect { (ids, liked, favorite) ->
-                val mediaList = ids.mapNotNull { id ->
-                    mediaStoreDataSource.queryAll().firstOrNull { it.mediaId == id }
-                }
+                val allMedia = mediaStoreDataSource.queryAll()
+                val byId = allMedia.associateBy { it.mediaId }
+                val mediaList = ids.mapNotNull { byId[it] }
                 _state.value = _state.value.copy(
                     items = mediaList,
                     likedIds = liked,
@@ -73,7 +73,10 @@ class StreamViewModel @Inject constructor(
         viewModelScope.launch {
             withContext(dispatchers.io) { randomStreamRepo.markViewed(item.mediaId) }
             val finished = withContext(dispatchers.io) { randomStreamRepo.isRoundFinished() }
-            _state.value = _state.value.copy(roundFinished = finished)
+            _state.value = _state.value.copy(
+                roundFinished = finished,
+                viewedCount = _state.value.viewedCount + 1,
+            )
         }
     }
 

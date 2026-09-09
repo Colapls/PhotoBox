@@ -1,5 +1,6 @@
 package com.photobox.feature.stream
 
+import android.content.IntentSender
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -42,7 +43,7 @@ fun StreamScreen(
         Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(
-                    text = "本轮已浏览 ${state.items.size} / ${state.items.size}",
+                    text = "本轮已浏览 ${state.viewedCount} / ${state.items.size}",
                     style = MaterialTheme.typography.headlineSmall,
                 )
                 Button(
@@ -65,13 +66,20 @@ fun StreamScreen(
     }
 
     val deleteLauncher = rememberDeleteRequestLauncher { success ->
-        val id = state.currentItem?.mediaId ?: return@rememberDeleteRequestLauncher
-        viewModel.onDeleteConfirmed(id, success)
+        // Read from VM.state.value at the moment the result returns — NOT from a stale composition-captured `state`.
+        val currentId = viewModel.state.value.currentItem?.mediaId ?: return@rememberDeleteRequestLauncher
+        viewModel.onDeleteConfirmed(currentId, success)
     }
+
+    var pendingDeleteId by remember { mutableStateOf<Long?>(null) }
+    var senderToLaunch by remember { mutableStateOf<IntentSender?>(null) }
     var showDeleteSheet by remember { mutableStateOf(false) }
-    val sender = state.currentItem?.let { viewModel.createDeleteIntent(it) }
-    LaunchedEffect(sender) {
-        if (sender != null) deleteLauncher.launch(sender)
+
+    if (senderToLaunch != null && pendingDeleteId != null) {
+        LaunchedEffect(senderToLaunch) {
+            deleteLauncher.launch(senderToLaunch!!)
+            senderToLaunch = null  // single-shot
+        }
     }
 
     Box(modifier = modifier.fillMaxSize()) {
@@ -86,7 +94,11 @@ fun StreamScreen(
                 imageUri = item.uri,
                 isFavorite = item.mediaId in state.favoriteIds,
                 onFavoriteToggle = { viewModel.onFavoriteToggle() },
-                onRequestDelete = { showDeleteSheet = true },
+                onRequestDelete = {
+                    pendingDeleteId = state.currentItem?.mediaId
+                    senderToLaunch = state.currentItem?.let { viewModel.createDeleteIntent(it) }
+                    showDeleteSheet = true
+                },
                 onDoubleTap = { viewModel.onLikeToggle() },
             )
         }
@@ -95,9 +107,13 @@ fun StreamScreen(
             DeleteConfirmationSheet(
                 onConfirm = {
                     showDeleteSheet = false
-                    // 系统会通过 IntentSender 弹窗继续
+                    // 系统会通过 IntentSender 弹窗继续 — LaunchedEffect 在 senderToLaunch 设置时已触发
                 },
-                onDismiss = { showDeleteSheet = false },
+                onDismiss = {
+                    showDeleteSheet = false
+                    pendingDeleteId = null
+                    senderToLaunch = null
+                },
             )
         }
     }

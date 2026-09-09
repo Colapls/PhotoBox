@@ -17,6 +17,7 @@ data class StreamUiState(
     val favoriteIds: Set<Long> = emptySet(),
     val roundFinished: Boolean = false,
     val isEmpty: Boolean = false,
+    val viewedCount: Int = 0,
 ) {
     val currentItem: MediaItem?
         get() = items.getOrNull(currentIndex)
