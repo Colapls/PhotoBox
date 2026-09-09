@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="day_title">当天相册</string>
+    <string name="day_empty">这一天没有照片</string>
+    <string name="day_back">返回</string>
+</resources>
