@@ -11,6 +11,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.photobox.core.data.datastore.UserPreferencesDataSource
+import com.photobox.feature.day.DayAlbumPhotoViewer
+import com.photobox.feature.day.DayAlbumRoute
 import com.photobox.feature.onboarding.OnboardingRoute
 import com.photobox.feature.profile.FavoritesListRoute
 import com.photobox.feature.profile.LikesListRoute
@@ -31,6 +33,11 @@ object Routes {
     const val FAVORITES_LIST = "profile/favorites"
     const val LIKES_LIST = "profile/likes"
     const val SETTINGS = "settings"
+    const val DAY_ALBUM = "day_album/{dateMs}"
+    const val DAY_ALBUM_VIEWER = "day_album/{dateMs}/viewer/{mediaId}"
+
+    fun dayAlbumRoute(dateMs: Long) = "day_album/$dateMs"
+    fun dayAlbumViewerRoute(dateMs: Long, mediaId: Long) = "day_album/$dateMs/viewer/$mediaId"
 }
 
 @HiltViewModel
@@ -67,7 +74,11 @@ fun PhotoBoxNavHost(
             )
         }
         composable(Routes.STREAM) {
-            StreamRoute()
+            StreamRoute(
+                onSwipeToDayAlbum = { dateMs ->
+                    navController.navigate(Routes.dayAlbumRoute(dateMs))
+                },
+            )
         }
         composable(Routes.PROFILE) {
             ProfileRoute(
@@ -84,6 +95,32 @@ fun PhotoBoxNavHost(
         }
         composable(Routes.SETTINGS) {
             SettingsRoute(onBack = { navController.popBackStack() })
+        }
+        composable(
+            route = Routes.DAY_ALBUM,
+            arguments = listOf(androidx.navigation.navArgument("dateMs") { type = androidx.navigation.NavType.LongType }),
+        ) { backStackEntry ->
+            val dateMs = backStackEntry.arguments?.getLong("dateMs") ?: System.currentTimeMillis()
+            DayAlbumRoute(
+                dateMs = dateMs,
+                onBack = { navController.popBackStack() },
+                onPhotoClick = { mediaId ->
+                    navController.navigate(Routes.dayAlbumViewerRoute(dateMs, mediaId))
+                },
+            )
+        }
+        composable(
+            route = Routes.DAY_ALBUM_VIEWER,
+            arguments = listOf(
+                androidx.navigation.navArgument("dateMs") { type = androidx.navigation.NavType.LongType },
+                androidx.navigation.navArgument("mediaId") { type = androidx.navigation.NavType.LongType },
+            ),
+        ) { backStackEntry ->
+            val mediaId = backStackEntry.arguments?.getLong("mediaId") ?: 0L
+            DayAlbumPhotoViewer(
+                initialMediaId = mediaId,
+                onBack = { navController.popBackStack() },
+            )
         }
     }
 }

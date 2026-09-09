@@ -5,8 +5,11 @@ import androidx.compose.ui.Modifier
 import com.photobox.core.ui.theme.PhotoBoxTheme
 
 @Composable
-fun StreamRoute(modifier: Modifier = Modifier) {
+fun StreamRoute(
+    modifier: Modifier = Modifier,
+    onSwipeToDayAlbum: (dateMs: Long) -> Unit = {},
+) {
     PhotoBoxTheme {
-        StreamScreen(modifier = modifier)
+        StreamScreen(modifier = modifier, onSwipeToDayAlbum = onSwipeToDayAlbum)
     }
 }
