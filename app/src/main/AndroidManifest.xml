@@ -19,6 +19,22 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <!-- 微信 SDK 回调入口（必须 export=false，由微信进程启动） -->
+        <activity
+            android:name=".wechat.WXEntryActivity"
+            android:exported="false"
+            android:taskAffinity="com.photobox.wxapi"
+            android:launchMode="singleTask"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:scheme="wx0000000000000000" />
+            </intent-filter>
+        </activity>
+        <meta-data
+            android:name="WX_APP_ID"
+            android:value="wx0000000000000000" />
     </application>
 
 </manifest>
