@@ -32,6 +32,8 @@ class StreamViewModel @Inject constructor(
     private val _state = MutableStateFlow(StreamUiState(isEmpty = true))
     val state: StateFlow<StreamUiState> = _state
 
+    private var lastViewedIndex: Int = -1
+
     init {
         viewModelScope.launch { reshuffleIfEmpty() }
         observeChanges()
@@ -68,15 +70,17 @@ class StreamViewModel @Inject constructor(
     }
 
     fun onPageChanged(index: Int) {
-        _state.value = _state.value.copy(currentIndex = index)
+        if (index == lastViewedIndex) return
+        lastViewedIndex = index
+        _state.value = _state.value.copy(
+            currentIndex = index,
+            viewedCount = _state.value.viewedCount + 1,
+        )
         val item = _state.value.items.getOrNull(index) ?: return
         viewModelScope.launch {
             withContext(dispatchers.io) { randomStreamRepo.markViewed(item.mediaId) }
             val finished = withContext(dispatchers.io) { randomStreamRepo.isRoundFinished() }
-            _state.value = _state.value.copy(
-                roundFinished = finished,
-                viewedCount = _state.value.viewedCount + 1,
-            )
+            _state.value = _state.value.copy(roundFinished = finished)
         }
     }
 
@@ -91,9 +95,14 @@ class StreamViewModel @Inject constructor(
     }
 
     fun onReshuffle() {
+        lastViewedIndex = -1
         viewModelScope.launch {
             withContext(dispatchers.io) { randomStreamRepo.reshuffle() }
-            _state.value = _state.value.copy(currentIndex = 0, roundFinished = false)
+            _state.value = _state.value.copy(
+                currentIndex = 0,
+                roundFinished = false,
+                viewedCount = 0,
+            )
         }
     }
 
