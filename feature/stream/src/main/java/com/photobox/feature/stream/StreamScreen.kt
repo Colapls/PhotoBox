@@ -1,6 +1,8 @@
 package com.photobox.feature.stream
 
 import android.content.IntentSender
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -19,6 +21,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.input.pointer.positionChange
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -27,6 +32,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 fun StreamScreen(
     modifier: Modifier = Modifier,
     viewModel: StreamViewModel = hiltViewModel(),
+    onSwipeToDayAlbum: (dateMs: Long) -> Unit = {},
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
@@ -82,7 +88,31 @@ fun StreamScreen(
         }
     }
 
-    Box(modifier = modifier.fillMaxSize()) {
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+            .pointerInput(state.currentItem?.mediaId) {
+                val thresholdPx = 80.dp.toPx()
+                awaitEachGesture {
+                    val down = awaitFirstDown(requireUnconsumed = false)
+                    var totalX = 0f
+                    var totalY = 0f
+                    while (true) {
+                        val event = awaitPointerEvent(PointerEventPass.Main)
+                        val change = event.changes.firstOrNull() ?: break
+                        if (!change.pressed) break
+                        totalX += change.positionChange().x
+                        totalY += change.positionChange().y
+                    }
+                    if (kotlin.math.abs(totalX) > thresholdPx &&
+                        kotlin.math.abs(totalX) > 2 * kotlin.math.abs(totalY) &&
+                        totalX < 0
+                    ) {
+                        state.currentItem?.let { onSwipeToDayAlbum(it.dateTakenMs) }
+                    }
+                }
+            },
+    ) {
         VerticalPager(
             state = pagerState,
             modifier = Modifier.fillMaxSize(),
