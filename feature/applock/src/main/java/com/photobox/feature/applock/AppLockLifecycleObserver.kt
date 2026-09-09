@@ -33,6 +33,12 @@ class AppLockLifecycleObserver @Inject constructor(
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
+    override fun onStart(owner: LifecycleOwner) {
+        // ProcessLifecycleOwner 触发 ON_START 时调用（App 切回前台）。
+        // TTL-reset 逻辑由 simulateOnStart() 实现，这里桥接以确保 spec §4.5 的 30s 窗口生效。
+        simulateOnStart()
+    }
+
     override fun onStop(owner: LifecycleOwner) {
         // 进入后台：保留 lastUnlockAt，由 ViewModel 在下次 onStart 时根据时间窗口判断。
         // 不在这里清零，否则 spec 的 30s 免认证失效。
