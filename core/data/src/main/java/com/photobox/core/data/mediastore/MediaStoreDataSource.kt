@@ -7,6 +7,8 @@ import android.database.ContentObserver
 import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
+import com.photobox.core.data.datastore.FilterMode
+import com.photobox.core.data.datastore.TimeRange
 import com.photobox.core.data.db.dao.PendingShuffleDao
 import com.photobox.core.data.db.entity.PendingShuffleEntity
 import dagger.hilt.android.qualifiers.ApplicationContext
