@@ -31,3 +31,8 @@ include(":core:common")
 
 include(":feature:onboarding")
 include(":feature:stream")
+include(":feature:profile")
+include(":feature:settings")
+include(":feature:day")
+include(":feature:applock")
+include(":feature:share")

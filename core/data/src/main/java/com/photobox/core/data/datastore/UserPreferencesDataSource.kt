@@ -78,4 +78,12 @@ class UserPreferencesDataSource @Inject constructor(
             prefs[Keys.VIEWED_COUNT] = (prefs[Keys.VIEWED_COUNT] ?: 0) + 1
         }
     }
+
+    suspend fun setViewedCount(value: Int) {
+        dataStore.edit { it[Keys.VIEWED_COUNT] = value }
+    }
+
+    suspend fun resetViewedCount() {
+        dataStore.edit { it.remove(Keys.VIEWED_COUNT) }
+    }
 }
