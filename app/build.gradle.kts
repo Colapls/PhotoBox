@@ -43,6 +43,7 @@ dependencies {
     implementation(project(":feature:settings"))
     implementation(project(":feature:day"))
     implementation(project(":feature:applock"))
+    implementation(project(":feature:share"))
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)

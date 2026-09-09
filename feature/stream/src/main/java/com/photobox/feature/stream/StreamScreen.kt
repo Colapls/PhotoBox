@@ -11,6 +11,8 @@ import androidx.compose.foundation.pager.VerticalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -24,9 +26,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.input.pointer.positionChange
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewModelScope
+import com.photobox.feature.share.ShareDispatcher
+import com.photobox.feature.share.ShareResult
+import com.photobox.feature.share.ShareResultBus
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
+import kotlinx.coroutines.launch
 
 @Composable
 fun StreamScreen(
@@ -69,6 +80,21 @@ fun StreamScreen(
     LaunchedEffect(pagerState) {
         snapshotFlow { pagerState.settledPage }
             .collect { index -> viewModel.onPageChanged(index) }
+    }
+
+    val context = LocalContext.current
+    val shareVm: ShareHelperViewModel = hiltViewModel()
+    val snackbar = remember { SnackbarHostState() }
+    val shareBus = shareVm.shareResultBus
+    LaunchedEffect(Unit) {
+        shareBus.results.collect { result ->
+            val msg = when (result) {
+                is ShareResult.Success -> "已分享到微信"
+                is ShareResult.Failure -> result.message
+                ShareResult.WeChatNotInstalled -> "请先安装微信"
+            }
+            snackbar.showSnackbar(msg)
+        }
     }
 
     val deleteLauncher = rememberDeleteRequestLauncher { success ->
@@ -129,6 +155,7 @@ fun StreamScreen(
                     senderToLaunch = state.currentItem?.let { viewModel.createDeleteIntent(it) }
                     showDeleteSheet = true
                 },
+                onShare = { shareVm.shareCurrent(context, item.uri) },
                 onDoubleTap = { viewModel.onLikeToggle() },
             )
         }
@@ -145,6 +172,32 @@ fun StreamScreen(
                     senderToLaunch = null
                 },
             )
+        }
+
+        SnackbarHost(
+            hostState = snackbar,
+            modifier = Modifier.align(Alignment.BottomCenter),
+        )
+    }
+}
+
+@HiltViewModel
+class ShareHelperViewModel @Inject constructor(
+    private val dispatcher: ShareDispatcher,
+    val shareResultBus: ShareResultBus,
+) : ViewModel() {
+    fun shareCurrent(context: android.content.Context, imageUri: String) {
+        viewModelScope.launch {
+            val request = coil3.request.ImageRequest.Builder(context)
+                .data(imageUri)
+                .size(coil3.size.Size(2048, 2048))
+                .build()
+            val result = coil3.imageLoader(context).execute(request)
+            val drawable = (result as coil3.request.SuccessResult)
+                .image
+                .asDrawable(context.resources)
+            val bitmap = (drawable as android.graphics.drawable.BitmapDrawable).bitmap
+            dispatcher.shareImages(listOf(bitmap))
         }
     }
 }

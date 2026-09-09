@@ -12,6 +12,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.BookmarkBorder
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
@@ -32,6 +33,7 @@ fun PhotoPage(
     isFavorite: Boolean,
     onFavoriteToggle: () -> Unit,
     onRequestDelete: () -> Unit,
+    onShare: () -> Unit,
     onDoubleTap: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -67,6 +69,13 @@ fun PhotoPage(
                 .padding(24.dp),
             horizontalArrangement = Arrangement.spacedBy(16.dp, Alignment.End),
         ) {
+            IconButton(onClick = onShare) {
+                Icon(
+                    imageVector = Icons.Default.Share,
+                    contentDescription = "分享",
+                    tint = Color.White,
+                )
+            }
             IconButton(onClick = onFavoriteToggle) {
                 Icon(
                     imageVector = if (isFavorite) Icons.Default.Bookmark else Icons.Default.BookmarkBorder,
