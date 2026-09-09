@@ -8,8 +8,15 @@ import com.photobox.core.ui.theme.PhotoBoxTheme
 fun StreamRoute(
     modifier: Modifier = Modifier,
     onSwipeToDayAlbum: (dateMs: Long) -> Unit = {},
+    onOpenSettings: () -> Unit = {},
+    onOpenProfile: () -> Unit = {},
 ) {
     PhotoBoxTheme {
-        StreamScreen(modifier = modifier, onSwipeToDayAlbum = onSwipeToDayAlbum)
+        StreamScreen(
+            modifier = modifier,
+            onSwipeToDayAlbum = onSwipeToDayAlbum,
+            onOpenSettings = onOpenSettings,
+            onOpenProfile = onOpenProfile,
+        )
     }
 }

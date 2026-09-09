@@ -78,6 +78,8 @@ fun PhotoBoxNavHost(
                 onSwipeToDayAlbum = { dateMs ->
                     navController.navigate(Routes.dayAlbumRoute(dateMs))
                 },
+                onOpenSettings = { navController.navigate(Routes.SETTINGS) },
+                onOpenProfile = { navController.navigate(Routes.PROFILE) },
             )
         }
         composable(Routes.PROFILE) {
