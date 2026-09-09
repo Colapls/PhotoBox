@@ -1,7 +1,7 @@
 package com.photobox.feature.stream
 
 import app.cash.turbine.test
-import com.photobox.core.common.AppDispatchers
+import com.photobox.core.common.TestAppDispatchers
 import com.photobox.core.data.mediastore.MediaItem
 import com.photobox.core.data.mediastore.MediaStoreDataSource
 import com.photobox.core.data.repository.DeleteRepository
@@ -27,7 +27,7 @@ import kotlin.test.assertEquals
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class StreamViewModelTest {
-    private val dispatchers = AppDispatchers(
+    private val dispatchers = TestAppDispatchers(
         io = UnconfinedTestDispatcher(),
         default = UnconfinedTestDispatcher(),
         main = UnconfinedTestDispatcher(),

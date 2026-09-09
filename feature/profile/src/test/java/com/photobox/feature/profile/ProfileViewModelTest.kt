@@ -1,7 +1,7 @@
 package com.photobox.feature.profile
 
 import app.cash.turbine.test
-import com.photobox.core.common.AppDispatchers
+import com.photobox.core.common.TestAppDispatchers
 import com.photobox.core.data.repository.ProfileStats
 import com.photobox.core.data.repository.StatsRepository
 import io.mockk.every
@@ -22,7 +22,7 @@ import kotlin.test.assertFalse
 @OptIn(ExperimentalCoroutinesApi::class)
 class ProfileViewModelTest {
     private val statsRepo: StatsRepository = mockk(relaxed = true)
-    private val dispatchers = AppDispatchers(
+    private val dispatchers = TestAppDispatchers(
         io = UnconfinedTestDispatcher(),
         default = UnconfinedTestDispatcher(),
         main = UnconfinedTestDispatcher(),
