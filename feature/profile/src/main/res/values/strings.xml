@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="profile_title">个人中心</string>
+    <string name="profile_stat_total">相册总数</string>
+    <string name="profile_stat_liked">我的点赞</string>
+    <string name="profile_stat_favorites">我的收藏</string>
+    <string name="profile_stat_viewed">已浏览</string>
+    <string name="profile_link_favorites">查看收藏</string>
+    <string name="profile_link_likes">查看点赞</string>
+    <string name="profile_back">返回</string>
+    <string name="profile_loading">加载中…</string>
+</resources>
