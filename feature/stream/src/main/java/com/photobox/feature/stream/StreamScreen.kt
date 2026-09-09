@@ -12,6 +12,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -61,16 +64,41 @@ fun StreamScreen(
             .collect { index -> viewModel.onPageChanged(index) }
     }
 
-    VerticalPager(
-        state = pagerState,
-        modifier = modifier.fillMaxSize(),
-        beyondViewportPageCount = 1,
-        key = { state.items[it].mediaId },
-    ) { pageIndex ->
-        val item = state.items[pageIndex]
-        PhotoPage(
-            imageUri = item.uri,
-            onDoubleTap = { viewModel.onLikeToggle() },
-        )
+    val deleteLauncher = rememberDeleteRequestLauncher { success ->
+        val id = state.currentItem?.mediaId ?: return@rememberDeleteRequestLauncher
+        viewModel.onDeleteConfirmed(id, success)
+    }
+    var showDeleteSheet by remember { mutableStateOf(false) }
+    val sender = state.currentItem?.let { viewModel.createDeleteIntent(it) }
+    LaunchedEffect(sender) {
+        if (sender != null) deleteLauncher.launch(sender)
+    }
+
+    Box(modifier = modifier.fillMaxSize()) {
+        VerticalPager(
+            state = pagerState,
+            modifier = Modifier.fillMaxSize(),
+            beyondViewportPageCount = 1,
+            key = { state.items[it].mediaId },
+        ) { pageIndex ->
+            val item = state.items[pageIndex]
+            PhotoPage(
+                imageUri = item.uri,
+                isFavorite = item.mediaId in state.favoriteIds,
+                onFavoriteToggle = { viewModel.onFavoriteToggle() },
+                onRequestDelete = { showDeleteSheet = true },
+                onDoubleTap = { viewModel.onLikeToggle() },
+            )
+        }
+
+        if (showDeleteSheet) {
+            DeleteConfirmationSheet(
+                onConfirm = {
+                    showDeleteSheet = false
+                    // 系统会通过 IntentSender 弹窗继续
+                },
+                onDismiss = { showDeleteSheet = false },
+            )
+        }
     }
 }

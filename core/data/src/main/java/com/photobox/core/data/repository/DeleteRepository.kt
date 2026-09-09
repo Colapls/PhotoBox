@@ -2,6 +2,7 @@ package com.photobox.core.data.repository
 
 import android.content.ContentResolver
 import android.content.Context
+import android.content.IntentSender
 import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
@@ -23,14 +24,14 @@ class DeleteRepository @Inject constructor(
     private val resolver: ContentResolver get() = context.contentResolver
 
     /**
-     * 准备 Intent 用于删除确认（API 30+）。
+     * 准备 IntentSender 用于删除确认（API 30+）。
      * pre-30：直接 resolver.delete()（已弃用但可工作）。
-     * VM 拿到 Intent 后用 ActivityResultLauncher 启动系统弹窗。
+     * VM 拿到 IntentSender 后用 ActivityResultLauncher 启动系统弹窗。
      */
-    fun createDeleteRequest(item: MediaItem): android.content.Intent? {
+    fun createDeleteRequest(item: MediaItem): IntentSender? {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) return null
         val uri = Uri.parse(item.uri)
-        return MediaStore.createDeleteRequest(resolver, listOf(uri))
+        return MediaStore.createDeleteRequest(resolver, listOf(uri)).intentSender
     }
 
     /**

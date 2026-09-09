@@ -2,8 +2,18 @@ package com.photobox.feature.stream
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Bookmark
+import androidx.compose.material.icons.filled.BookmarkBorder
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
@@ -13,16 +23,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 
-/**
- * 单页：黑底，Coil AsyncImage 加载，双击触发点赞动画。
- * 不在本页处理 like/favorite 状态切换（由 VM 通过 likeTrigger 回调）。
- */
 @Composable
 fun PhotoPage(
     imageUri: String,
+    isFavorite: Boolean,
+    onFavoriteToggle: () -> Unit,
+    onRequestDelete: () -> Unit,
     onDoubleTap: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -33,24 +42,45 @@ fun PhotoPage(
             .fillMaxSize()
             .background(Color.Black)
             .pointerInput(imageUri) {
-                detectTapGestures(
-                    onDoubleTap = {
-                        likeTrigger += 1
-                        onDoubleTap()
-                    },
-                )
+                detectTapGestures(onDoubleTap = {
+                    likeTrigger += 1
+                    onDoubleTap()
+                })
             },
         contentAlignment = Alignment.Center,
     ) {
         AsyncImage(
             model = imageUri,
             contentDescription = null,
-            contentScale = ContentScale.Fit,
             modifier = Modifier.fillMaxSize(),
         )
         LikeAnimation(
             triggerKey = likeTrigger,
             modifier = Modifier.fillMaxSize(),
         )
+
+        // 收藏 / 删除 overlay
+        Row(
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .fillMaxWidth()
+                .padding(24.dp),
+            horizontalArrangement = Arrangement.spacedBy(16.dp, Alignment.End),
+        ) {
+            IconButton(onClick = onFavoriteToggle) {
+                Icon(
+                    imageVector = if (isFavorite) Icons.Default.Bookmark else Icons.Default.BookmarkBorder,
+                    contentDescription = if (isFavorite) "取消收藏" else "收藏",
+                    tint = if (isFavorite) Color(0xFFFF6B00) else Color.White,
+                )
+            }
+            IconButton(onClick = onRequestDelete) {
+                Icon(
+                    imageVector = Icons.Default.Delete,
+                    contentDescription = "删除",
+                    tint = Color.White,
+                )
+            }
+        }
     }
 }
