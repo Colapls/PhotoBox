@@ -159,6 +159,7 @@ fun StreamScreen(
             PhotoPage(
                 imageUri = item.uri,
                 isFavorite = item.mediaId in state.favoriteIds,
+                isVideo = item.isVideo,
                 onFavoriteToggle = { viewModel.onFavoriteToggle() },
                 onRequestDelete = {
                     pendingDeleteId = state.currentItem?.mediaId

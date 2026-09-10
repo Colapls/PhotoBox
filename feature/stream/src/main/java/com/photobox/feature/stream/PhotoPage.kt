@@ -26,11 +26,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
+import com.photobox.core.media.VideoPlayer
 
 @Composable
 fun PhotoPage(
     imageUri: String,
     isFavorite: Boolean,
+    isVideo: Boolean = false,
     onFavoriteToggle: () -> Unit,
     onRequestDelete: () -> Unit,
     onShare: () -> Unit,
@@ -51,11 +53,18 @@ fun PhotoPage(
             },
         contentAlignment = Alignment.Center,
     ) {
-        AsyncImage(
-            model = imageUri,
-            contentDescription = null,
-            modifier = Modifier.fillMaxSize(),
-        )
+        if (isVideo) {
+            VideoPlayer(
+                uri = imageUri,
+                modifier = Modifier.fillMaxSize(),
+            )
+        } else {
+            AsyncImage(
+                model = imageUri,
+                contentDescription = null,
+                modifier = Modifier.fillMaxSize(),
+            )
+        }
         LikeAnimation(
             triggerKey = likeTrigger,
             modifier = Modifier.fillMaxSize(),
