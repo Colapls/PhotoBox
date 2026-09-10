@@ -28,6 +28,7 @@ include(":app")
 include(":core:ui")
 include(":core:data")
 include(":core:common")
+include(":core:media")
 
 include(":feature:onboarding")
 include(":feature:stream")
