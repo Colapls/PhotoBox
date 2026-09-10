@@ -13,6 +13,7 @@ dependencies {
     implementation(project(":core:ui"))
     implementation(project(":core:data"))
     implementation(project(":core:common"))
+    implementation(project(":core:media"))
 
     implementation(libs.androidx.compose.material3)
     implementation(libs.androidx.compose.foundation)

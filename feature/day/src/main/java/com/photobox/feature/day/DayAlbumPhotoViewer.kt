@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
+import com.photobox.core.media.VideoPlayer
 
 /**
  * 当天相册的全屏查看器：复用 DayAlbumViewModel 的 state（保证数据与 grid 一致）。
@@ -46,12 +47,19 @@ fun DayAlbumPhotoViewer(
                 key = { state.items[it].mediaId },
             ) { pageIndex ->
                 val item = state.items[pageIndex]
-                AsyncImage(
-                    model = item.uri,
-                    contentDescription = null,
-                    contentScale = ContentScale.Fit,
-                    modifier = Modifier.fillMaxSize(),
-                )
+                if (item.isVideo) {
+                    VideoPlayer(
+                        uri = item.uri,
+                        modifier = Modifier.fillMaxSize(),
+                    )
+                } else {
+                    AsyncImage(
+                        model = item.uri,
+                        contentDescription = null,
+                        contentScale = ContentScale.Fit,
+                        modifier = Modifier.fillMaxSize(),
+                    )
+                }
             }
         }
         IconButton(
