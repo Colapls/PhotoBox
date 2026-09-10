@@ -15,6 +15,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
@@ -37,6 +39,13 @@ class StreamViewModel @Inject constructor(
     init {
         viewModelScope.launch { reshuffleIfEmpty() }
         observeChanges()
+        // 订阅 MediaStore 新增媒体。observeNewMedia 内部通过 ContentObserver 触发，
+        // 并把新发现的 ID 写入 pending_shuffle_dao 作为副作用（订阅本身即激活）。
+        // 现有 observeChanges() 流程消费的是 randomStreamRepo.queue（已 shuffle 的批次），
+        // 新 ID 需用户手动触发 reshuffle 才进入流式浏览（spec §5.3 允许）。
+        mediaStoreDataSource.observeNewMedia(knownMediaIds = currentShuffleIds())
+            .onEach { /* subscription itself activates the ContentObserver pipeline */ }
+            .launchIn(viewModelScope)
     }
 
     private suspend fun reshuffleIfEmpty() {
@@ -45,6 +54,8 @@ class StreamViewModel @Inject constructor(
             withContext(dispatchers.io) { randomStreamRepo.reshuffle() }
         }
     }
+
+    private fun currentShuffleIds(): Set<Long> = state.value.items.map { it.mediaId }.toSet()
 
     private fun observeChanges() {
         viewModelScope.launch {
