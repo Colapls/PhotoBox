@@ -31,6 +31,14 @@ PhotoBox 不要求注册或登录，不上传照片、视频或个人数据。
 - Android SDK 35
 - Gradle 8.10.2
 
+## 下载
+
+从 [GitHub Releases](https://github.com/Colapls/PhotoBox/releases/latest) 下载预编译 APK：
+
+- [PhotoBox-1.0.0.apk](https://github.com/Colapls/PhotoBox/releases/download/v1.0.0/PhotoBox-1.0.0.apk) — 正式版 1.0.0
+
+下载后启用"未知来源应用"权限即可直接安装到 Android 8.0 及以上设备。
+
 ## 构建
 
 克隆仓库后，在项目根目录执行：
