@@ -3,7 +3,7 @@
 This project is dual‑licensed:
 
 ## 1. MIT License — For Personal / Non‑Commercial Use
-Copyright (c) 2026 [你的名字]
+Copyright (c) 2026 Colapls
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -33,6 +33,6 @@ If you or your company want to:
 - Embed into commercial mobile App / SaaS service
 - Internal commercial deployment / customized secondary development
 
-Please contact **[你的联系邮箱]** to purchase a commercial license.
+Please contact **[colapls@163.com](mailto:colapls@163.com)** to purchase a commercial license.
 
 Unauthorized commercial use without purchasing commercial license automatically terminates your rights to use this Software.
