@@ -180,25 +180,23 @@ fun StreamScreen(
                 val touchSlop = viewConfiguration.touchSlop
                 awaitEachGesture {
                     val down = awaitFirstDown(requireUnconsumed = false)
-                    // null = 未锁定；true = 水平主导；false = 垂直主导
-                    var lockedHorizontal: Boolean? = null
+                    // null = 还在 touchSlop 内；true = 水平锁定；false = 垂直锁定。
+                    // 一旦锁定为垂直，就停止累加，但继续安静观察直到抬起——不主动 break，
+                    // 避免打断 Compose 手势协程导致 VerticalPager 拖拽失效。
+                    var horizontalLocked: Boolean? = null
                     var totalDx = 0f
                     var totalDy = 0f
                     while (true) {
                         val event = awaitPointerEvent(PointerEventPass.Main)
                         val change = event.changes.firstOrNull() ?: break
                         if (!change.pressed) break
-                        if (lockedHorizontal == null) {
+                        if (horizontalLocked == null) {
                             val dx = change.position.x - down.position.x
                             val dy = change.position.y - down.position.y
                             val axis = classifySwipeAxis(dx, dy, touchSlop)
-                            if (axis == false) {
-                                // 判定为纵向 → 立刻放手，让 VerticalPager 处理
-                                break
-                            }
-                            lockedHorizontal = axis
+                            if (axis != null) horizontalLocked = axis
                         }
-                        if (lockedHorizontal == true) {
+                        if (horizontalLocked == true) {
                             totalDx += change.positionChange().x
                             totalDy += change.positionChange().y
                         }
