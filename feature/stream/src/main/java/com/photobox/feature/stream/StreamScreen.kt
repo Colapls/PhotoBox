@@ -7,8 +7,7 @@ import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.gestures.awaitEachGesture
-import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -50,9 +49,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shadow
-import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.input.pointer.positionChange
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -61,7 +58,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import androidx.core.content.ContextCompat
-import kotlin.math.abs
 import com.photobox.core.data.mediastore.MediaItem
 import com.photobox.core.ui.BrandLogo
 import com.photobox.feature.share.ShareDispatcher
@@ -177,34 +173,22 @@ fun StreamScreen(
         modifier = modifier
             .fillMaxSize()
             .pointerInput(state.currentItem?.mediaId) {
+                // 用 Compose 自带的 detectHorizontalDragGestures 替代手写 awaitEachGesture：
+                // 它内部用 awaitTouchSlopOrCancellation 处理「水平 vs 垂直」判定，
+                // 不会和 VerticalPager 的 pointerInput 抢状态机。
+                // 水平拖到阈值（4×touchSlop）→ 当天相册；垂直动作它自动放手。
                 val touchSlop = viewConfiguration.touchSlop
-                awaitEachGesture {
-                    val down = awaitFirstDown(requireUnconsumed = false)
-                    // null = 还在 touchSlop 内；true = 水平锁定；false = 垂直锁定。
-                    // 一旦锁定为垂直，就停止累加，但继续安静观察直到抬起——不主动 break，
-                    // 避免打断 Compose 手势协程导致 VerticalPager 拖拽失效。
-                    var horizontalLocked: Boolean? = null
-                    var totalDx = 0f
-                    var totalDy = 0f
-                    while (true) {
-                        val event = awaitPointerEvent(PointerEventPass.Main)
-                        val change = event.changes.firstOrNull() ?: break
-                        if (!change.pressed) break
-                        if (horizontalLocked == null) {
-                            val dx = change.position.x - down.position.x
-                            val dy = change.position.y - down.position.y
-                            val axis = classifySwipeAxis(dx, dy, touchSlop)
-                            if (axis != null) horizontalLocked = axis
+                var accumulated = 0f
+                detectHorizontalDragGestures(
+                    onDragStart = { accumulated = 0f },
+                    onDragEnd = {
+                        if (accumulated < -touchSlop * 4) {
+                            state.currentItem?.let { onSwipeToDayAlbum(it.dateTakenMs) }
                         }
-                        if (horizontalLocked == true) {
-                            totalDx += change.positionChange().x
-                            totalDy += change.positionChange().y
-                        }
-                    }
-                    if (isLeftSwipe(totalDx, totalDy, touchSlop)) {
-                        state.currentItem?.let { onSwipeToDayAlbum(it.dateTakenMs) }
-                    }
-                }
+                    },
+                    onDragCancel = { accumulated = 0f },
+                    onHorizontalDrag = { _, dragAmount -> accumulated += dragAmount },
+                )
             },
     ) {
         VerticalPager(
