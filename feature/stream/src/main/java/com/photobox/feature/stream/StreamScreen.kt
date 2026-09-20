@@ -7,7 +7,8 @@ import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.gestures.detectHorizontalDragGestures
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -49,7 +50,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shadow
+import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.input.pointer.positionChange
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -58,6 +61,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewModelScope
 import androidx.core.content.ContextCompat
+import kotlin.math.abs
 import com.photobox.core.data.mediastore.MediaItem
 import com.photobox.core.ui.BrandLogo
 import com.photobox.feature.share.ShareDispatcher
@@ -173,22 +177,28 @@ fun StreamScreen(
         modifier = modifier
             .fillMaxSize()
             .pointerInput(state.currentItem?.mediaId) {
-                // 用 Compose 自带的 detectHorizontalDragGestures 替代手写 awaitEachGesture：
-                // 它内部用 awaitTouchSlopOrCancellation 处理「水平 vs 垂直」判定，
-                // 不会和 VerticalPager 的 pointerInput 抢状态机。
-                // 水平拖到阈值（4×touchSlop）→ 当天相册；垂直动作它自动放手。
-                val touchSlop = viewConfiguration.touchSlop
-                var accumulated = 0f
-                detectHorizontalDragGestures(
-                    onDragStart = { accumulated = 0f },
-                    onDragEnd = {
-                        if (accumulated < -touchSlop * 4) {
-                            state.currentItem?.let { onSwipeToDayAlbum(it.dateTakenMs) }
-                        }
-                    },
-                    onDragCancel = { accumulated = 0f },
-                    onHorizontalDrag = { _, dragAmount -> accumulated += dragAmount },
-                )
+                // ponytail: 回到 session 开始时工作树里那版——只观察、不消费，
+                // 累计 positionChange，由 VerticalPager 自己处理上下滑动。
+                // 「左滑偶尔被识别成上下」的误触先放一边，能用优先。
+                val thresholdPx = 80.dp.toPx()
+                awaitEachGesture {
+                    val down = awaitFirstDown(requireUnconsumed = false)
+                    var totalX = 0f
+                    var totalY = 0f
+                    while (true) {
+                        val event = awaitPointerEvent(PointerEventPass.Main)
+                        val change = event.changes.firstOrNull() ?: break
+                        if (!change.pressed) break
+                        totalX += change.positionChange().x
+                        totalY += change.positionChange().y
+                    }
+                    if (kotlin.math.abs(totalX) > thresholdPx &&
+                        kotlin.math.abs(totalX) > 2 * kotlin.math.abs(totalY) &&
+                        totalX < 0
+                    ) {
+                        state.currentItem?.let { onSwipeToDayAlbum(it.dateTakenMs) }
+                    }
+                }
             },
     ) {
         VerticalPager(
