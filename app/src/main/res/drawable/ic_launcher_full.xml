@@ -1,8 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  Adaptive icon 前景层：圆角方块（纯橙）+ 弹出的照片卡 + 盒子 + 星光。
-  与 background 同色 (#FFFF6B00)，保证 OEM 单独渲染任一层都得到完整图标。
-  元素坐标按 logo.svg (viewBox 120) 等比缩到 108，rx 也按 27/120*108≈24 调整。
+  单 vector 启动图标：圆角方块（纯色橙）+ 弹出的照片卡 + 盒子 + 星光。
+  viewBox 108x108，所有元素直接画在 viewport 内（不再使用 adaptive-icon 分层），
+  绕开部分 OEM launcher 不渲染 <background>/<foreground> 分层、导致前景元素
+  漂浮在透明/默认背景上只显示"中间"的问题。
+
+  颜色 #FFFF6B00 取 logo.svg 渐变起始色；几何严格对齐 logo.svg：
+  - 圆角 rx=24（viewBox 108 下），原 logo.svg viewBox 120 rx=27 → 27/120 = 0.225，
+    108 * 0.225 ≈ 24.3，取整 24
+  - 元素坐标按比例从 logo.svg 的 120 缩放到 108（* 0.9）后微调到 launcher 安全区
 -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
