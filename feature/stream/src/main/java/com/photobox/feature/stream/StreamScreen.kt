@@ -38,6 +38,7 @@ import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.StarBorder
 import androidx.compose.material.icons.filled.Today
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -45,6 +46,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -120,15 +122,6 @@ fun StreamScreen(
         Box(modifier = modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             androidx.compose.material3.CircularProgressIndicator()
         }
-        return
-    }
-
-    if (state.isEmpty) {
-        EmptyState(
-            title = "相册里一张照片都没有",
-            description = "去系统相机拍几张，回来看这里能不能刷出来",
-            modifier = modifier,
-        )
         return
     }
 
@@ -214,22 +207,32 @@ fun StreamScreen(
                 }
             },
     ) {
-        VerticalPager(
-            state = pagerState,
-            modifier = Modifier.fillMaxSize(),
-            beyondViewportPageCount = 1,
-            key = { state.items[it].mediaId },
-        ) { pageIndex ->
-            val item = state.items[pageIndex]
-            PhotoPage(
-                item = item,
-                isActive = pageIndex == pagerState.currentPage,
-                onDoubleTap = {
-                    viewModel.onLikeToggle()
-                    likeBurstTick += 1
-                },
-                burstTick = likeBurstTick,
+        if (state.isEmpty) {
+            // 筛选后没有任何匹配项时不渲染 VerticalPager（避免 pageCount=0 崩溃），
+            // 但保留底部/顶部的导航按钮，让用户可以进入设置页面调整筛选条件。
+            EmptyState(
+                title = "不存在这样的照片",
+                description = "试试调整筛选条件，或回到设置换一种浏览模式",
+                modifier = Modifier.fillMaxSize(),
             )
+        } else {
+            VerticalPager(
+                state = pagerState,
+                modifier = Modifier.fillMaxSize(),
+                beyondViewportPageCount = 1,
+                key = { state.items[it].mediaId },
+            ) { pageIndex ->
+                val item = state.items[pageIndex]
+                PhotoPage(
+                    item = item,
+                    isActive = pageIndex == pagerState.currentPage,
+                    onDoubleTap = {
+                        viewModel.onLikeToggle()
+                        likeBurstTick += 1
+                    },
+                    burstTick = likeBurstTick,
+                )
+            }
         }
 
         Box(
@@ -305,6 +308,8 @@ fun StreamScreen(
         }
 
         // 底部操作栏：固定显示，不随图片滑动
+        // 仅在有照片时显示：所有 IconButton 都依赖 state.currentItem，空列表没意义。
+        if (!state.isEmpty) {
         Row(
             modifier = Modifier
                 .align(Alignment.BottomEnd)
@@ -368,11 +373,33 @@ fun StreamScreen(
                 )
             }
         }
+        }
 
         SnackbarHost(
             hostState = snackbar,
             modifier = Modifier.align(Alignment.BottomCenter),
         )
+
+        // 筛选条件匹配到 0 张时弹「不存在这样的照片」提示。
+        // 点「显示全部」会重置模式/时间范围 + reshuffle；点「留在筛选」则关弹框
+        // 保留筛选条件（用户可自行去设置里调）。
+        if (state.filterEmptyPromptVisible) {
+            AlertDialog(
+                onDismissRequest = { viewModel.dismissFilterEmptyPrompt() },
+                title = { Text("不存在这样的照片") },
+                text = { Text("当前筛选条件下没有匹配的照片。\n点击「显示全部」会用全部照片重新洗牌；点击「留在筛选」则保留当前条件，可去设置里调整。") },
+                confirmButton = {
+                    TextButton(onClick = { viewModel.onFilterEmptyFallback() }) {
+                        Text("显示全部")
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { viewModel.dismissFilterEmptyPrompt() }) {
+                        Text("留在筛选")
+                    }
+                },
+            )
+        }
     }
 }
 

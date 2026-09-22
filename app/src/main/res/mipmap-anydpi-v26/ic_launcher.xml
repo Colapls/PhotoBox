@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
-  Adaptive icon：background 和 foreground 都画满 #FFFF6B00 圆角方块 + 前景元素。
-  这样无论 OEM 是否正确渲染分层，视觉上都是完整的橙色 logo。
--->
-<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
-    <background android:drawable="@drawable/ic_launcher_background" />
-    <foreground android:drawable="@drawable/ic_launcher_foreground" />
-</adaptive-icon>

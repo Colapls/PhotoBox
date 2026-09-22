@@ -1,37 +1,55 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  品牌 Logo：圆角方块（纯色橙）+ 弹出的照片卡 + 盒子 + 星光。
-  严格对齐 docs/logo.svg 几何（viewBox 120x120，圆角 rx=27，元素坐标）。
-
-  关键决定：背景用纯色 #FFFF6B00 而非 <aapt:attr> 渐变。
-  <aapt:attr gradient> 在很多 OEM 上不能正确渲染（表现为四周渐变消失，
-  只剩中间前景元素），所以用纯色保证全设备一致显示。颜色取 logo.svg
-  渐变起始色 #ff6b00，肉眼上和 logo.svg 几乎无差异。
+  App 内 Logo：完整复刻 docs/logo.svg。
+  圆角方块用 <aapt:attr gradient> 线性渐变 (#ff6b00 → #ff3d5e)；
+  前景元素（照片卡 + 盒子 + 星光）严格按 svg 几何坐标。
+  几何与 svg 一一对应：viewBox 120x120, rx=27。
 -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
     android:width="64dp"
     android:height="64dp"
     android:viewportWidth="120"
     android:viewportHeight="120">
 
-    <!-- 圆角方块背景：112x112 @ (4,4)，rx=27（与 logo.svg 完全一致） -->
-    <path
-        android:fillColor="#FFFF6B00"
-        android:pathData="M4,4 L116,4 A27,27 0 0 1 116,116 L4,116 A27,27 0 0 1 4,4 Z" />
+    <!-- 圆角方块背景：渐变 #ff6b00 → #ff3d5e -->
+    <path android:pathData="M4,4 L116,4 A27,27 0 0 1 116,116 L4,116 A27,27 0 0 1 4,4 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:type="linear"
+                android:startX="4"
+                android:startY="4"
+                android:endX="116"
+                android:endY="116">
+                <item android:offset="0" android:color="#FFFF6B00" />
+                <item android:offset="1" android:color="#FFFF3D5E" />
+            </gradient>
+        </aapt:attr>
+    </path>
 
     <!-- 弹出的照片卡：旋转 -14°，中心 (60, 46) -->
     <group
         android:pivotX="60"
         android:pivotY="46"
         android:rotation="-14">
-        <!-- 卡片白底 42,20 37x44 rx=6 -->
+        <!-- 卡片白底 -->
         <path
             android:fillColor="#FFFFFFFF"
             android:pathData="M42,20 L79,20 A6,6 0 0 1 85,26 L85,64 A6,6 0 0 1 79,70 L42,70 A6,6 0 0 1 36,64 L36,26 A6,6 0 0 1 42,20 Z" />
-        <!-- 卡片橙色窗口 46.5,25 28x26 rx=3.5 -->
-        <path
-            android:fillColor="#FFFF6B00"
-            android:pathData="M46.5,25 L74.5,25 A3.5,3.5 0 0 1 78,28.5 L78,51 A3.5,3.5 0 0 1 74.5,54.5 L46.5,54.5 A3.5,3.5 0 0 1 43,51 L43,28.5 A3.5,3.5 0 0 1 46.5,25 Z" />
+        <!-- 卡片橙色窗口（用同色渐变） -->
+        <path android:pathData="M46.5,25 L74.5,25 A3.5,3.5 0 0 1 78,28.5 L78,51 A3.5,3.5 0 0 1 74.5,54.5 L46.5,54.5 A3.5,3.5 0 0 1 43,51 L43,28.5 A3.5,3.5 0 0 1 46.5,25 Z">
+            <aapt:attr name="android:fillColor">
+                <gradient
+                    android:type="linear"
+                    android:startX="46.5"
+                    android:startY="25"
+                    android:endX="78"
+                    android:endY="54.5">
+                    <item android:offset="0" android:color="#FFFF6B00" />
+                    <item android:offset="1" android:color="#E6FF3D5E" />
+                </gradient>
+            </aapt:attr>
+        </path>
         <!-- 白色小圆 -->
         <path
             android:fillColor="#FFFFFFFF"
@@ -39,6 +57,7 @@
         <!-- 山形景色 -->
         <path
             android:fillColor="#FFFFFFFF"
+            android:fillAlpha="0.92"
             android:pathData="M46.5,47 L53.5,39.5 L59,45.5 L64,40 L74.5,51 A3.5,3.5 0 0 1 71,54.5 L46.5,54.5 A3.5,3.5 0 0 1 43,51 Z" />
         <!-- 浅橙色装饰条 -->
         <path
@@ -57,19 +76,31 @@
         android:fillAlpha="0.07"
         android:pathData="M28,62 L92,62 L92,71 L28,71 Z" />
 
-    <!-- 中间色带 -->
-    <path
-        android:fillColor="#FFFF6B00"
-        android:pathData="M55,62 L65,62 L65,98 L55,98 Z" />
+    <!-- 中间色带（用渐变） -->
+    <path android:pathData="M55,62 L65,62 L65,98 L55,98 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:type="linear"
+                android:startX="55"
+                android:startY="62"
+                android:endX="65"
+                android:endY="98">
+                <item android:offset="0" android:color="#FFFF6B00" />
+                <item android:offset="1" android:color="#FFFF3D5E" />
+            </gradient>
+        </aapt:attr>
+    </path>
 
     <!-- 左盒盖 -->
     <path
         android:fillColor="#FFFFFFFF"
+        android:fillAlpha="0.95"
         android:pathData="M28,62 L15,52 A3,3 0 0 1 17.2,47.7 L40,47.7 Z" />
 
     <!-- 右盒盖 -->
     <path
         android:fillColor="#FFFFFFFF"
+        android:fillAlpha="0.95"
         android:pathData="M92,62 L105,52 A3,3 0 0 0 102.8,47.7 L80,47.7 Z" />
 
     <!-- 星光（右上） -->
@@ -80,10 +111,12 @@
     <!-- 星光（左中） -->
     <path
         android:fillColor="#FFFFFFFF"
+        android:fillAlpha="0.85"
         android:pathData="M28,30 L29.5,33.9 L33.4,35.4 L29.5,36.9 L28,40.8 L26.5,36.9 L22.6,35.4 L26.5,33.9 Z" />
 
     <!-- 右下小圆点 -->
     <path
         android:fillColor="#FFFFFFFF"
+        android:fillAlpha="0.8"
         android:pathData="M96,46 m-2.4,0 a2.4,2.4 0 1,0 4.8,0 a2.4,2.4 0 1,0 -4.8,0" />
 </vector>

@@ -124,12 +124,16 @@ class StreamViewModel @Inject constructor(
                 val allMedia = mediaStoreDataSource.queryAll()
                 val byRealId = allMedia.associateBy { it.mediaId }
                 val mediaList = ids.mapNotNull { byRealId[it] }
+                val wasEmpty = _state.value.isEmpty
+                val nowEmpty = mediaList.isEmpty()
                 _state.value = _state.value.copy(
                     items = mediaList,
                     likedIds = liked,
                     favoriteIds = favorite,
                     isLoading = false,
-                    isEmpty = mediaList.isEmpty(),
+                    isEmpty = nowEmpty,
+                    // 仅在「之前有，现在没有」的边界弹出提示，避免 reshuffle/刷新时反复弹
+                    filterEmptyPromptVisible = !wasEmpty && nowEmpty,
                     roundFinished = _state.value.roundFinished && mediaList.isNotEmpty(),
                 )
             }
@@ -177,6 +181,27 @@ class StreamViewModel @Inject constructor(
                 viewedCount = 0,
             )
         }
+    }
+
+    /**
+     * 当前筛选条件下没有匹配项时，用户从空状态 AlertDialog 点确认。
+     * 清掉时间范围和模式（保留 albumFilter 不动——用户主动选的相册不该自动改），
+     * 然后 reshuffle。prefs.onEach 订阅会顺带把 currentIndex 重置并触发再次筛选。
+     */
+    fun onFilterEmptyFallback() {
+        _state.value = _state.value.copy(filterEmptyPromptVisible = false)
+        viewModelScope.launch {
+            userPrefs.setFilterMode(com.photobox.core.data.datastore.FilterMode.MIXED)
+            userPrefs.setTimeRange(com.photobox.core.data.datastore.TimeRange.ALL)
+            userPrefs.setCustomRange(null, null)
+            // 上面 setFilterMode/setTimeRange 已经触发 prefs.onEach → reshuffle，
+            // 不需要再单独 onReshuffle。
+        }
+    }
+
+    /** 用户主动关闭 AlertDialog（不走 fallback） */
+    fun dismissFilterEmptyPrompt() {
+        _state.value = _state.value.copy(filterEmptyPromptVisible = false)
     }
 
     fun createDeleteIntent(item: MediaItem) = deleteRepo.createDeleteRequest(item)
