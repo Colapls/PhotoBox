@@ -3,6 +3,7 @@ package com.photobox.core.data.repository
 import com.photobox.core.data.db.dao.PendingShuffleDao
 import com.photobox.core.data.db.dao.ShuffleDao
 import com.photobox.core.data.db.entity.ShuffleStateEntity
+import com.photobox.core.data.datastore.MediaFilter
 import com.photobox.core.data.mediastore.MediaStoreDataSource
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -25,11 +26,11 @@ class RandomStreamRepository @Inject constructor(
         .distinctUntilChanged()
 
     /**
-     * 重新洗牌：从 MediaStore 全量 + pending_shuffle 合并，去重，Fisher-Yates。
+     * 重新洗牌：从 [MediaStoreDataSource.queryWithFilter] + pending_shuffle 合并，去重，Fisher-Yates。
      * 持久化新的 ShuffleStateEntity，重置 currentIndex = 0。
      */
-    suspend fun reshuffle() {
-        val all = mediaStore.queryAll().map { it.mediaId }
+    suspend fun reshuffle(filter: MediaFilter = MediaFilter()) {
+        val all = mediaStore.queryWithFilter(filter).map { it.mediaId }
         val pending = pendingShuffleDao.readAllIds()
         val merged = (all + pending).distinct()
         val shuffled = fisherYates(merged)

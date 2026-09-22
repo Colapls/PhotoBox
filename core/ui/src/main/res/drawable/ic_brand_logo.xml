@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  品牌 Logo：圆角方块（纯色橙）+ 弹出的照片卡 + 盒子 + 星光。
+  严格对齐 docs/logo.svg 几何（viewBox 120x120，圆角 rx=27，元素坐标）。
+
+  关键决定：背景用纯色 #FFFF6B00 而非 <aapt:attr> 渐变。
+  <aapt:attr gradient> 在很多 OEM 上不能正确渲染（表现为四周渐变消失，
+  只剩中间前景元素），所以用纯色保证全设备一致显示。颜色取 logo.svg
+  渐变起始色 #ff6b00，肉眼上和 logo.svg 几乎无差异。
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="64dp"
+    android:height="64dp"
+    android:viewportWidth="120"
+    android:viewportHeight="120">
+
+    <!-- 圆角方块背景：112x112 @ (4,4)，rx=27（与 logo.svg 完全一致） -->
+    <path
+        android:fillColor="#FFFF6B00"
+        android:pathData="M4,4 L116,4 A27,27 0 0 1 116,116 L4,116 A27,27 0 0 1 4,4 Z" />
+
+    <!-- 弹出的照片卡：旋转 -14°，中心 (60, 46) -->
+    <group
+        android:pivotX="60"
+        android:pivotY="46"
+        android:rotation="-14">
+        <!-- 卡片白底 42,20 37x44 rx=6 -->
+        <path
+            android:fillColor="#FFFFFFFF"
+            android:pathData="M42,20 L79,20 A6,6 0 0 1 85,26 L85,64 A6,6 0 0 1 79,70 L42,70 A6,6 0 0 1 36,64 L36,26 A6,6 0 0 1 42,20 Z" />
+        <!-- 卡片橙色窗口 46.5,25 28x26 rx=3.5 -->
+        <path
+            android:fillColor="#FFFF6B00"
+            android:pathData="M46.5,25 L74.5,25 A3.5,3.5 0 0 1 78,28.5 L78,51 A3.5,3.5 0 0 1 74.5,54.5 L46.5,54.5 A3.5,3.5 0 0 1 43,51 L43,28.5 A3.5,3.5 0 0 1 46.5,25 Z" />
+        <!-- 白色小圆 -->
+        <path
+            android:fillColor="#FFFFFFFF"
+            android:pathData="M53,32 m-2.6,0 a2.6,2.6 0 1,0 5.2,0 a2.6,2.6 0 1,0 -5.2,0" />
+        <!-- 山形景色 -->
+        <path
+            android:fillColor="#FFFFFFFF"
+            android:pathData="M46.5,47 L53.5,39.5 L59,45.5 L64,40 L74.5,51 A3.5,3.5 0 0 1 71,54.5 L46.5,54.5 A3.5,3.5 0 0 1 43,51 Z" />
+        <!-- 浅橙色装饰条 -->
+        <path
+            android:fillColor="#FFFFD9BD"
+            android:pathData="M46.5,55.5 L63.5,55.5 A1.7,1.7 0 0 1 63.5,58.9 L46.5,58.9 A1.7,1.7 0 0 1 46.5,55.5 Z" />
+    </group>
+
+    <!-- 盒子主体：28,62 64x36 -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M28,62 L92,62 L92,88 A10,10 0 0 1 82,98 L38,98 A10,10 0 0 1 28,88 Z" />
+
+    <!-- 盒子顶部阴影 -->
+    <path
+        android:fillColor="#FF000000"
+        android:fillAlpha="0.07"
+        android:pathData="M28,62 L92,62 L92,71 L28,71 Z" />
+
+    <!-- 中间色带 -->
+    <path
+        android:fillColor="#FFFF6B00"
+        android:pathData="M55,62 L65,62 L65,98 L55,98 Z" />
+
+    <!-- 左盒盖 -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M28,62 L15,52 A3,3 0 0 1 17.2,47.7 L40,47.7 Z" />
+
+    <!-- 右盒盖 -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M92,62 L105,52 A3,3 0 0 0 102.8,47.7 L80,47.7 Z" />
+
+    <!-- 星光（右上） -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M88,22 L90.4,28.2 L96.6,30.6 L90.4,33 L88,39.2 L85.6,33 L79.4,30.6 L85.6,28.2 Z" />
+
+    <!-- 星光（左中） -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M28,30 L29.5,33.9 L33.4,35.4 L29.5,36.9 L28,40.8 L26.5,36.9 L22.6,35.4 L26.5,33.9 Z" />
+
+    <!-- 右下小圆点 -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M96,46 m-2.4,0 a2.4,2.4 0 1,0 4.8,0 a2.4,2.4 0 1,0 -4.8,0" />
+</vector>

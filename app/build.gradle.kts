@@ -1,10 +1,11 @@
 import java.util.Properties
 
 plugins {
-    id("photobox.android.application")
-    id("photobox.android.compose")
-    alias(libs.plugins.ksp)
-    alias(libs.plugins.hilt)
+    id("com.android.application")
+    id("org.jetbrains.kotlin.android")
+    id("org.jetbrains.kotlin.plugin.compose")
+    id("com.google.devtools.ksp")
+    id("com.google.dagger.hilt.android")
 }
 
 val keystorePropertiesFile = rootProject.file("keystore.properties")
@@ -16,11 +17,18 @@ val keystoreProperties = Properties().apply {
 
 android {
     namespace = "com.photobox"
+    compileSdk = 35
     defaultConfig {
         applicationId = "com.photobox.app"
         versionCode = 3
         versionName = "1.1.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        minSdk = 26
+        targetSdk = 35
+    }
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
     signingConfigs {
         if (keystorePropertiesFile.exists()) {
@@ -55,6 +63,12 @@ android {
     }
 }
 
+kotlin {
+    compilerOptions {
+        jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
+    }
+}
+
 dependencies {
     implementation(project(":core:ui"))
     implementation(project(":core:common"))
@@ -64,26 +78,26 @@ dependencies {
     implementation(project(":feature:profile"))
     implementation(project(":feature:settings"))
     implementation(project(":feature:day"))
-    implementation(project(":feature:share"))
     implementation(project(":core:media"))
 
-    implementation(libs.androidx.compose.material3)
-    implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.lifecycle.runtime.ktx)
-    implementation(libs.androidx.lifecycle.runtime.compose)
-    implementation(libs.androidx.activity.compose)
-    implementation(libs.androidx.fragment.ktx)
-    implementation(libs.androidx.navigation.compose)
+    implementation("androidx.compose.material3:material3")
+    implementation("androidx.core:core-ktx:1.13.1")
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.7")
+    implementation("androidx.lifecycle:lifecycle-runtime-compose:2.8.7")
+    implementation("androidx.activity:activity-compose:1.9.3")
+    implementation("androidx.fragment:fragment-ktx:1.8.5")
+    implementation("androidx.navigation:navigation-compose:2.8.4")
 
-    implementation(libs.hilt.android)
-    ksp(libs.hilt.compiler)
-    implementation(libs.hilt.navigation.compose)
+    implementation("com.google.dagger:hilt-android:2.52")
+    ksp("com.google.dagger:hilt-compiler:2.52")
+    implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
 
-    implementation(libs.kotlinx.coroutines.android)
-    implementation(libs.coil.core)
-    implementation(libs.wechat.sdk.android)
-    implementation(libs.androidx.process)
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.9.0")
+    implementation("io.coil-kt.coil3:coil-core:3.0.4")
+    // 微信 OpenSDK：libs/open-sdk-lite-release.aar 不在本机，使用 feature/share 中的 stub。
+    // 真正部署时需把本地 aar 加回来并删除 stub。
+    implementation("androidx.lifecycle:lifecycle-process:2.8.7")
 
-    debugImplementation(libs.androidx.compose.ui.tooling)
-    implementation(libs.androidx.compose.ui.tooling.preview)
+    debugImplementation("androidx.compose.ui:ui-tooling")
+    implementation("androidx.compose.ui:ui-tooling-preview")
 }

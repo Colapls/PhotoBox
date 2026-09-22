@@ -19,10 +19,10 @@ class UserPreferencesDataSource @Inject constructor(
     private object Keys {
         val ONBOARDING_DONE = booleanPreferencesKey("onboarding_done")
         val PRIVACY_ACK = booleanPreferencesKey("privacy_acknowledged")
-        val APP_LOCK_ENABLED = booleanPreferencesKey("app_lock_enabled")
-        val APP_LOCK_LAST_UNLOCK_AT = longPreferencesKey("app_lock_last_unlock_at")
         val FILTER_MODE = stringPreferencesKey("filter_mode")
         val TIME_RANGE = stringPreferencesKey("time_range")
+        val CUSTOM_START_MS = longPreferencesKey("custom_start_ms")
+        val CUSTOM_END_MS = longPreferencesKey("custom_end_ms")
         val ALBUM_FILTER = stringPreferencesKey("album_filter")
         val VIEWED_COUNT = intPreferencesKey("viewed_count")
     }
@@ -31,12 +31,12 @@ class UserPreferencesDataSource @Inject constructor(
         UserPreferences(
             onboardingDone = prefs[Keys.ONBOARDING_DONE] ?: false,
             privacyAcknowledged = prefs[Keys.PRIVACY_ACK] ?: false,
-            appLockEnabled = prefs[Keys.APP_LOCK_ENABLED] ?: false,
-            appLockLastUnlockAt = prefs[Keys.APP_LOCK_LAST_UNLOCK_AT] ?: 0L,
             filterMode = prefs[Keys.FILTER_MODE]?.let { runCatching { FilterMode.valueOf(it) }.getOrNull() }
                 ?: FilterMode.MIXED,
             timeRange = prefs[Keys.TIME_RANGE]?.let { runCatching { TimeRange.valueOf(it) }.getOrNull() }
                 ?: TimeRange.ALL,
+            customStartMs = prefs[Keys.CUSTOM_START_MS],
+            customEndMs = prefs[Keys.CUSTOM_END_MS],
             albumFilter = prefs[Keys.ALBUM_FILTER],
             viewedCount = prefs[Keys.VIEWED_COUNT] ?: 0,
         )
@@ -50,20 +50,19 @@ class UserPreferencesDataSource @Inject constructor(
         dataStore.edit { it[Keys.PRIVACY_ACK] = value }
     }
 
-    suspend fun setAppLockEnabled(value: Boolean) {
-        dataStore.edit { it[Keys.APP_LOCK_ENABLED] = value }
-    }
-
-    suspend fun setAppLockLastUnlockAt(value: Long) {
-        dataStore.edit { it[Keys.APP_LOCK_LAST_UNLOCK_AT] = value }
-    }
-
     suspend fun setFilterMode(value: FilterMode) {
         dataStore.edit { it[Keys.FILTER_MODE] = value.name }
     }
 
     suspend fun setTimeRange(value: TimeRange) {
         dataStore.edit { it[Keys.TIME_RANGE] = value.name }
+    }
+
+    suspend fun setCustomRange(startMs: Long?, endMs: Long?) {
+        dataStore.edit { prefs ->
+            if (startMs == null) prefs.remove(Keys.CUSTOM_START_MS) else prefs[Keys.CUSTOM_START_MS] = startMs
+            if (endMs == null) prefs.remove(Keys.CUSTOM_END_MS) else prefs[Keys.CUSTOM_END_MS] = endMs
+        }
     }
 
     suspend fun setAlbumFilter(value: String?) {

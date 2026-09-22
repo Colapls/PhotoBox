@@ -4,9 +4,9 @@ import app.cash.turbine.test
 import com.photobox.core.common.TestAppDispatchers
 import com.photobox.core.data.mediastore.MediaItem
 import com.photobox.core.data.mediastore.MediaStoreDataSource
+import com.photobox.core.data.repository.DeleteRepository
 import com.photobox.core.data.repository.FavoriteRepository
 import com.photobox.core.data.repository.LikeRepository
-import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -22,6 +22,7 @@ class DayAlbumViewModelTest {
     private val mediaStore: MediaStoreDataSource = mockk(relaxed = true)
     private val likeRepo: LikeRepository = mockk(relaxed = true)
     private val favoriteRepo: FavoriteRepository = mockk(relaxed = true)
+    private val deleteRepo: DeleteRepository = mockk(relaxed = true)
     private val dispatchers = TestAppDispatchers(
         io = UnconfinedTestDispatcher(),
         default = UnconfinedTestDispatcher(),
@@ -38,7 +39,7 @@ class DayAlbumViewModelTest {
         every { likeRepo.observeAllIds() } returns flowOf(emptyList())
         every { favoriteRepo.observeAllIds() } returns flowOf(emptyList())
 
-        val vm = DayAlbumViewModel(mediaStore, likeRepo, favoriteRepo, dispatchers)
+        val vm = DayAlbumViewModel(mediaStore, likeRepo, favoriteRepo, deleteRepo, dispatchers)
         vm.load(now)
 
         vm.state.test {

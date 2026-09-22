@@ -9,4 +9,9 @@
     <string name="profile_link_likes">查看点赞</string>
     <string name="profile_back">返回</string>
     <string name="profile_loading">加载中…</string>
+    <string name="profile_section_recall">那年今日</string>
+    <string name="profile_open_on_this_day">那年今日</string>
+    <string name="on_this_day_title">那年今日（%1$s）</string>
+    <string name="on_this_day_back">返回</string>
+    <string name="on_this_day_empty">往年的 %1$s 还没有留下照片</string>
 </resources>

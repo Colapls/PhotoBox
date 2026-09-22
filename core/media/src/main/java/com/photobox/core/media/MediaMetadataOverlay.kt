@@ -60,11 +60,3 @@ private fun formatTakenAt(dateTakenMs: Long): String? {
     val formatter = SimpleDateFormat("yyyy年M月d日 HH:mm", Locale.getDefault())
     return formatter.format(Date(dateTakenMs))
 }
-
-private fun formatLocation(latitude: Double?, longitude: Double?): String? {
-    // 实际显示交由 [rememberGeocodedAddress] 反地理编码（国家·省·市·区）。
-    // 这里仅做空判断保留兼容签名（不再使用）。
-    if (latitude == null || longitude == null) return null
-    if (latitude == 0.0 && longitude == 0.0) return null
-    return null
-}

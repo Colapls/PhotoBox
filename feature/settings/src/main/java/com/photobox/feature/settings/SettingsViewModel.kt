@@ -40,16 +40,6 @@ class SettingsViewModel @Inject constructor(
                 refreshCacheSize()
             }
             .launchIn(viewModelScope)
-        loadAlbums()
-    }
-
-    private fun loadAlbums() {
-        viewModelScope.launch {
-            val albums = withContext(dispatchers.io) {
-                mediaStore.queryAll().map { it.uri }.distinct()  // 占位：真实相册列表需要 BUCKET_DISPLAY_NAME；Plan 3 仅返回 distinct uri
-            }
-            _state.value = _state.value.copy(availableAlbums = albums)
-        }
     }
 
     fun setFilterMode(mode: FilterMode) {
@@ -60,12 +50,12 @@ class SettingsViewModel @Inject constructor(
         viewModelScope.launch { prefs.setTimeRange(range) }
     }
 
-    fun setAlbumFilter(album: String?) {
-        viewModelScope.launch { prefs.setAlbumFilter(album) }
+    fun setCustomRange(startMs: Long?, endMs: Long?) {
+        viewModelScope.launch { prefs.setCustomRange(startMs, endMs) }
     }
 
-    fun toggleAppLock(enabled: Boolean) {
-        viewModelScope.launch { prefs.setAppLockEnabled(enabled) }
+    fun setAlbumFilter(album: String?) {
+        viewModelScope.launch { prefs.setAlbumFilter(album) }
     }
 
     fun reshuffle() {

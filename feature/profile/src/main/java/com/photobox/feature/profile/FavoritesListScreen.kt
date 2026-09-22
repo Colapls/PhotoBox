@@ -1,6 +1,7 @@
 package com.photobox.feature.profile
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
@@ -73,6 +74,7 @@ class FavoritesListViewModel @Inject constructor(
 @Composable
 fun FavoritesListScreen(
     onBack: () -> Unit,
+    onPhotoClick: (Long) -> Unit = {},
     modifier: Modifier = Modifier,
     viewModel: FavoritesListViewModel = hiltViewModel(),
 ) {
@@ -112,7 +114,8 @@ fun FavoritesListScreen(
                     modifier = Modifier
                         .size(120.dp)
                         .clip(RoundedCornerShape(8.dp))
-                        .background(MaterialTheme.colorScheme.surfaceVariant),
+                        .background(MaterialTheme.colorScheme.surfaceVariant)
+                        .clickable { onPhotoClick(item.mediaId) },
                 )
             }
         }

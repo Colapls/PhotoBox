@@ -3,4 +3,9 @@
     <string name="day_title">当天相册</string>
     <string name="day_empty">这一天没有照片</string>
     <string name="day_back">返回</string>
+    <string name="day_selected_count">已选 %1$d</string>
+    <string name="day_batch_favorite">收藏</string>
+    <string name="day_batch_delete">删除</string>
+    <string name="day_exit_selection">退出</string>
+    <string name="day_batch_delete_unsupported">此系统版本不支持批量删除</string>
 </resources>

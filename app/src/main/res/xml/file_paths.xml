@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  FileProvider 路径白名单：
+  - external-files-path name="img"  → context.getExternalFilesDir(null) + path="images"
+  - cache-path         name="cache" → context.cacheDir            + path="."
+  实际只用 cache；external 路径是为以后导出到相册时再开启。
+-->
+<paths xmlns:android="http://schemas.android.com/apk/res/android">
+    <external-files-path name="img" path="images/" />
+    <cache-path name="cache" path="." />
+</paths>

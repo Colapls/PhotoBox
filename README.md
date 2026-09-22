@@ -62,11 +62,23 @@
 
 ### 🔍 精细化内容筛选
 
-自由切换浏览模式：混合媒体、仅照片、仅视频；支持多维度时间范围筛选，精准翻看特定时段的回忆，适配不同浏览需求。
+自由切换浏览模式：混合媒体、仅照片、仅视频、仅 GIF；支持多维度时间范围筛选（近 1 月/3 月/1 年/3 年/5 年/全部/自定义），精准翻看特定时段的回忆，适配不同浏览需求。
+
+### 📍 EXIF 位置回溯
+
+照片如有 GPS 经纬度，自动逆地理编码为「国家 · 省 · 市 · 区」展示在左下角。地理位置仅在本机解析，不上传任何定位服务。
+
+### 📅 那年今日
+
+顶部按钮自动检测今天是否有往年拍的照片，有则显示入口；点进入按年份倒序列出"那年这一天"的所有照片，每张角标标注拍摄年份。
+
+### 🔍 双指缩放查看细节
+
+照片支持双指缩放（最高 5x），以画面中心为锚点；放大后用单指拖动查看任意细节；双击屏幕快速点赞并触发爱心爆发特效。
 
 ### 👋 新手友好引导
 
-首次启动递进式引导：隐私权限说明、媒体权限申请、手势操作教学，零基础用户也能一秒上手。
+首次启动递进式引导：隐私权限说明、媒体权限申请、手势操作教学，零基础用户也能一秒上手。完成后自动跳到照片流，再次启动不再显示欢迎页。
 
 ---
 
@@ -92,7 +104,7 @@ Android 8.0（API 26）及以上版本
 
 前往 [Releases](https://github.com/Colapls/PhotoBox/releases) 下载最新正式 APK：
 
-✅ [PhotoBox-1.0.0 正式版](https://github.com/Colapls/PhotoBox/releases/download/v1.0.0/PhotoBox-1.0.0.apk)
+✅ [PhotoBox-1.1.1 正式版](https://github.com/Colapls/PhotoBox/releases/download/v1.1.1/PhotoBox-1.1.1.apk)
 
 安装说明：下载后开启「未知来源应用安装」权限，即可正常安装使用。
 
@@ -119,7 +131,7 @@ gradlew.bat :app:assembleDebug
 ### 运行单元测试
 
 ```bash
-./gradlew :core:common:testDebugUnitTest :feature:day:testDebugUnitTest
+./gradlew test
 ```
 
 ---
@@ -132,10 +144,11 @@ gradlew.bat :app:assembleDebug
 - **UI 框架**：Jetpack Compose + Material 3 全量原生 UI
 - **架构组件**：Navigation Compose、Hilt 依赖注入
 - **数据存储**：Room 数据库、DataStore 偏好存储
-- **媒体内核**：MediaStore、Media3 ExoPlayer
-- **图片加载**：Coil 3.0（支持内存/磁盘双缓存、GIF 解码）
+- **媒体内核**：MediaStore、Media3 ExoPlayer 1.4.1
+- **图片加载**：Coil 3.0（支持内存/磁盘双缓存、GIF 解码、视频首帧）
 - **异步调度**：Kotlin Coroutines + Flow
-- **构建工具**：Gradle Kotlin DSL、版本目录管理
+- **构建工具**：Gradle 8.11.1（Kotlin DSL）、JDK 17、版本目录管理
+- **最低支持**：Android 8.0（API 26）/ 编译目标 Android 15（API 35）
 
 ---
 
@@ -157,7 +170,6 @@ PhotoBox/
 │   ├── profile/         # 个人中心、数据统计、收藏列表
 │   ├── settings/        # 筛选设置、缓存配置、洗牌规则
 │   └── onboarding/      # 首次启动引导、权限申请
-├── build-logic/         # Gradle 构建约定插件
 └── docs/                # 项目设计文档、开发说明
 ```
 
@@ -165,7 +177,7 @@ PhotoBox/
 
 ## 📌 当前版本限制 & 未来规划
 
-### 当前 1.0.0 版本限制
+### 当前 1.1.1 版本限制
 
 - 自定义相册筛选功能尚未完全适配随机流
 - 暂无应用锁隐私保护功能

@@ -1,73 +1,128 @@
 package com.photobox.feature.stream
 
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
-import androidx.compose.foundation.gestures.detectTapGestures
-import androidx.compose.foundation.gestures.detectTransformGestures
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import coil3.compose.AsyncImage
-import coil3.request.ImageRequest
-import coil3.size.Size
 import com.photobox.core.data.mediastore.MediaItem
 import com.photobox.core.media.MediaMetadataOverlay
 import com.photobox.core.media.VideoPlayer
+import com.photobox.core.media.ZoomablePhotoViewer
 
-private const val MAX_ZOOM = 5f
-
+/**
+ * 单张照片的全屏渲染：
+ * - 图片用 [ZoomablePhotoViewer]（双指缩放 5x）。
+ * - 视频用 [VideoPlayer]，传入 isActive 避免相邻页预加载发声。
+ * - **双击点赞** 在此层用自定义 [awaitEachGesture] 实现，不消费 DOWN，
+ *   所以 VerticalPager 仍能正常拿走 DOWN 处理垂直翻页 —— 不冲突。
+ *   （用 [detectTapGestures] 会强制 consume DOWN → 卡死翻页。）
+ * - **双击动效**：当 burstTick 变化时，在屏幕中央放大弹出一个红色爱心，
+ *   0.6s 内 scale 0.4 → 1.2、alpha 1 → 0。
+ */
 @Composable
 fun PhotoPage(
     item: MediaItem,
+    isActive: Boolean,
     onDoubleTap: () -> Unit,
     modifier: Modifier = Modifier,
+    burstTick: Int = 0,
 ) {
     val imageUri = item.uri
-    var likeTrigger by remember { mutableIntStateOf(0) }
+    val scale = remember { Animatable(0f) }
+    val alpha = remember { Animatable(0f) }
+
+    // burstTick 是单调递增计数器；每次 +1 重置动画到初始态再播放一次。
+    LaunchedEffect(burstTick) {
+        if (burstTick == 0) return@LaunchedEffect
+        scale.snapTo(0.4f)
+        alpha.snapTo(1f)
+        scale.animateTo(1.2f, animationSpec = tween(durationMillis = 250))
+        scale.animateTo(1.0f, animationSpec = tween(durationMillis = 100))
+        alpha.animateTo(0f, animationSpec = tween(durationMillis = 350))
+    }
 
     Box(
         modifier = modifier
             .fillMaxSize()
             .background(Color.Black)
-            .pointerInput(imageUri) {
-                detectTapGestures(onDoubleTap = {
-                    likeTrigger += 1
-                    onDoubleTap()
-                })
+            .pointerInput(item.mediaId) {
+                // 被动双击检测：不 consume DOWN / MOVE / UP。
+                // 通过两次 UP 之间的时间差判断是否是 double-tap：
+                //   1) 一次 DOWN-UP 序列（tap）：记录最后一次 UP 时间。
+                //   2) 第二次 DOWN-UP 在 300ms 内出现 → 触发 onDoubleTap，清零防止三连击。
+                // 任何事件都不消费 → VerticalPager 拿到的还是 unconsumed 事件，翻页不受影响。
+                var lastUpUptimeMs = 0L
+                awaitEachGesture {
+                    val down = awaitFirstDown(requireUnconsumed = false)
+                    val downUptimeMs = down.uptimeMillis
+                    while (true) {
+                        val event = awaitPointerEvent()
+                        val allUp = event.changes.all { !it.pressed }
+                        if (!allUp) continue
+                        val upUptimeMs = event.changes.first().uptimeMillis
+                        val tapDuration = upUptimeMs - downUptimeMs
+                        val sinceLastUp = upUptimeMs - lastUpUptimeMs
+                        if (tapDuration < 250L && sinceLastUp in 1L..300L) {
+                            onDoubleTap()
+                            lastUpUptimeMs = 0L  // 防三连击
+                        } else if (tapDuration < 250L) {
+                            lastUpUptimeMs = upUptimeMs
+                        }
+                        break
+                    }
+                }
             },
         contentAlignment = Alignment.Center,
     ) {
         if (item.isVideo) {
             VideoPlayer(
                 uri = imageUri,
+                isActive = isActive,
                 modifier = Modifier.fillMaxSize(),
             )
         } else {
-            ZoomableImage(
-                imageUri = imageUri,
+            ZoomablePhotoViewer(
+                uri = imageUri,
                 modifier = Modifier.fillMaxSize(),
             )
         }
 
-        // 动图标识：mimeType == image/gif 时左下角叠一个 GIF 徽标
+        // 双击爆发的爱心：始终叠在屏幕上，scale/alpha 驱动显隐。
+        if (burstTick > 0) {
+            Icon(
+                imageVector = Icons.Filled.Favorite,
+                contentDescription = null,
+                tint = Color(0xFFFF3344),
+                modifier = Modifier
+                    .size(120.dp)
+                    .scale(scale.value)
+                    .alpha(alpha.value),
+            )
+        }
+
+        // 动图标识：mimeType == image/gif 时左上角叠一个 GIF 徽标
         if (item.mimeType.equals("image/gif", ignoreCase = true)) {
             Box(
                 modifier = Modifier
@@ -95,63 +150,5 @@ fun PhotoPage(
                 .align(Alignment.BottomStart)
                 .padding(bottom = 76.dp),
         )
-        LikeAnimation(
-            triggerKey = likeTrigger,
-            modifier = Modifier.fillMaxSize(),
-        )
     }
-}
-
-/**
- * 可缩放/平移的图片。
- *
- * 缩放 1x–5x：基于 [detectTransformGestures] 统一处理 pinch-zoom + pan，
- * 缩放以 centroid 为锚点；放大后单指拖动即平移。
- *
- * 清晰度：传给 Coil 的 [Size.ORIGINAL]，请求原图分辨率解码 bitmap，
- * 5x 缩放后仍然有像素细节。
- *
- * 回到 1x 时自动归位 offset。
- */
-@Composable
-private fun ZoomableImage(
-    imageUri: String,
-    modifier: Modifier = Modifier,
-) {
-    val context = LocalContext.current
-    var scale by remember(imageUri) { mutableFloatStateOf(1f) }
-    var offset by remember(imageUri) { mutableStateOf(Offset.Zero) }
-
-    val request = remember(imageUri) {
-        ImageRequest.Builder(context)
-            .data(imageUri)
-            .size(Size.ORIGINAL)
-            .build()
-    }
-
-    AsyncImage(
-        model = request,
-        contentDescription = null,
-        contentScale = ContentScale.Fit,
-        modifier = modifier
-            .graphicsLayer {
-                scaleX = scale
-                scaleY = scale
-                translationX = offset.x
-                translationY = offset.y
-            }
-            .pointerInput(imageUri) {
-                detectTransformGestures { centroid, pan, zoom, _ ->
-                    val newScale = (scale * zoom).coerceIn(1f, MAX_ZOOM)
-                    val ratio = newScale / scale
-                    // 缩放以 centroid 为锚点 + 加上手指 pan
-                    offset = centroid + (offset - centroid) * ratio + pan
-                    scale = newScale
-                    if (scale <= 1f) {
-                        scale = 1f
-                        offset = Offset.Zero
-                    }
-                }
-            },
-    )
 }

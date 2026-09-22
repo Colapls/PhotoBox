@@ -70,3 +70,6 @@ lint/tmp/
 
 # Mac
 .DS_Store
+
+# KSP / Kotlin compiler caches
+.kotlin/

@@ -10,6 +10,7 @@ import com.photobox.core.data.db.dao.FavoriteDao
 import com.photobox.core.data.db.dao.LikeDao
 import com.photobox.core.data.db.dao.PendingShuffleDao
 import com.photobox.core.data.db.dao.ShuffleDao
+import com.photobox.core.data.db.dao.ViewedDao
 import com.photobox.core.data.mediastore.MediaStoreDataSource
 import dagger.Module
 import dagger.Provides
@@ -45,6 +46,7 @@ object DataModule {
     @Provides fun provideLikeDao(db: AppDatabase): LikeDao = db.likeDao()
     @Provides fun provideShuffleDao(db: AppDatabase): ShuffleDao = db.shuffleDao()
     @Provides fun providePendingShuffleDao(db: AppDatabase): PendingShuffleDao = db.pendingShuffleDao()
+    @Provides fun provideViewedDao(db: AppDatabase): ViewedDao = db.viewedDao()
 
     @Provides
     @Singleton

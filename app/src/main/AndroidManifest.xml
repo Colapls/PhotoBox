@@ -1,6 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <!-- 读取相册 / 视频的运行时权限。
+         PermissionPromptScreen 用 ActivityResultContracts.RequestMultiplePermissions 申请；
+         如果不在 manifest 声明，requestPermissions 会被系统默默忽略，
+         checkSelfPermission 永远返回 DENIED → 永远看不到相册。 -->
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
+    <!-- 旧版本兼容：API 32 及以下用 READ_EXTERNAL_STORAGE，maxSdkVersion 限制到 32 -->
+    <uses-permission
+        android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32" />
+
+    <!-- Android Q (API 29) 及以上读取媒体 EXIF GPS 经纬度所需；
+         不声明则运行时 requestPermissions 会被系统默默忽略，位置信息永远为 null。 -->
+    <uses-permission android:name="android.permission.ACCESS_MEDIA_LOCATION" />
+
     <application
         android:name=".PhotoBoxApplication"
         android:allowBackup="false"
@@ -10,6 +25,7 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/Theme.PhotoBox">
+
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -19,22 +35,18 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <!-- 微信 SDK 回调入口（必须 export=false，由微信进程启动） -->
-        <activity
-            android:name=".wechat.WXEntryActivity"
+
+        <!-- FileProvider：分享图片到微信 / QQ 等其它 App 时用，
+             authorities 用 ${applicationId}，避免与其它 App 冲突 -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
             android:exported="false"
-            android:taskAffinity="com.photobox.wxapi"
-            android:launchMode="singleTask"
-            android:theme="@android:style/Theme.Translucent.NoTitleBar">
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <data android:scheme="wx0000000000000000" />
-            </intent-filter>
-        </activity>
-        <meta-data
-            android:name="WX_APP_ID"
-            android:value="wx0000000000000000" />
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
     </application>
 
 </manifest>

@@ -35,7 +35,6 @@ class UserPreferencesDataSourceTest {
             val pref = awaitItem()
             assertEquals(false, pref.onboardingDone)
             assertEquals(false, pref.privacyAcknowledged)
-            assertEquals(false, pref.appLockEnabled)
             assertEquals(FilterMode.MIXED, pref.filterMode)
             cancelAndIgnoreRemainingEvents()
         }

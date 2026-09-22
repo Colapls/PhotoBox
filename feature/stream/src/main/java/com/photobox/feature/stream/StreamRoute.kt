@@ -10,6 +10,7 @@ fun StreamRoute(
     onSwipeToDayAlbum: (dateMs: Long) -> Unit = {},
     onOpenSettings: () -> Unit = {},
     onOpenProfile: () -> Unit = {},
+    onOpenOnThisDay: () -> Unit = {},
 ) {
     PhotoBoxTheme {
         StreamScreen(
@@ -17,6 +18,7 @@ fun StreamRoute(
             onSwipeToDayAlbum = onSwipeToDayAlbum,
             onOpenSettings = onOpenSettings,
             onOpenProfile = onOpenProfile,
+            onOpenOnThisDay = onOpenOnThisDay,
         )
     }
 }

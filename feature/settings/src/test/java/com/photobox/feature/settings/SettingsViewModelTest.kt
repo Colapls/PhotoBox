@@ -51,13 +51,13 @@ class SettingsViewModelTest {
     @Test fun `reshuffle delegates to randomRepo and emits toast`() = runTest {
         every { prefs.userPreferences } returns MutableStateFlow(UserPreferences())
         every { mediaStore.queryAll() } returns emptyList()
-        coEvery { randomRepo.reshuffle() } returns Unit
+        coEvery { randomRepo.reshuffle(any()) } returns Unit
         val vm = SettingsViewModel(mockk(relaxed = true), prefs, randomRepo, mediaStore, dispatchers)
 
         vm.state.test {
             skipItems(1)  // 初始 isLoading=true
             vm.reshuffle()
-            coVerify { randomRepo.reshuffle() }
+            coVerify { randomRepo.reshuffle(any()) }
             val s = awaitItem()
             assertEquals("已重新洗牌", s.toast)
             cancelAndIgnoreRemainingEvents()

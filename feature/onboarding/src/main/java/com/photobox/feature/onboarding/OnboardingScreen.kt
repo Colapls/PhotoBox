@@ -12,6 +12,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.launch
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -25,6 +27,7 @@ fun OnboardingScreen(
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val pagerState = rememberPagerState(pageCount = { 3 })
+    val scope = rememberCoroutineScope()
 
     LaunchedEffect(pagerState.currentPage) {
         viewModel.onPageChanged(pagerState.currentPage)
@@ -43,11 +46,11 @@ fun OnboardingScreen(
             when (page) {
                 0 -> PrivacyPromiseScreen(onAcknowledge = {
                     viewModel.onPrivacyAcknowledged()
-                    advance(pagerState, 1)
+                    scope.launch { advance(pagerState, 1) }
                 })
                 1 -> PermissionPromptScreen(onGranted = {
                     viewModel.onPermissionGranted()
-                    advance(pagerState, 2)
+                    scope.launch { advance(pagerState, 2) }
                 })
                 2 -> GestureIntroScreen(onContinue = {
                     viewModel.complete(onCompleted)

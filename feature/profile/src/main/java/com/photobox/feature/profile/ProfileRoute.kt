@@ -9,6 +9,8 @@ fun ProfileRoute(
     onBack: () -> Unit,
     onOpenFavorites: () -> Unit,
     onOpenLikes: () -> Unit,
+    onOpenViewed: () -> Unit,
+    onOpenOnThisDay: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     PhotoBoxTheme {
@@ -16,6 +18,8 @@ fun ProfileRoute(
             onBack = onBack,
             onOpenFavorites = onOpenFavorites,
             onOpenLikes = onOpenLikes,
+            onOpenViewed = onOpenViewed,
+            onOpenOnThisDay = onOpenOnThisDay,
             modifier = modifier,
         )
     }

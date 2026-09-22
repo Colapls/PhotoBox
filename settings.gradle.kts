@@ -1,5 +1,4 @@
 pluginManagement {
-    includeBuild("build-logic")
     repositories {
         google {
             content {
@@ -24,16 +23,12 @@ dependencyResolutionManagement {
 rootProject.name = "PhotoBox"
 
 include(":app")
-
 include(":core:ui")
 include(":core:data")
 include(":core:common")
 include(":core:media")
-
 include(":feature:onboarding")
 include(":feature:stream")
 include(":feature:profile")
 include(":feature:settings")
 include(":feature:day")
-include(":feature:applock")
-include(":feature:share")
